@@ -13,7 +13,7 @@ font-weight: bold;
 
 `
 const CardImage = styled.img`
-    height: 140px;
+    height: 200px;
     width: 140px;
     border-radius: 50%;
     margin: 15% 25% 22px;
