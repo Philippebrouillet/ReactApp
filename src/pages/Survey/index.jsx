@@ -1,93 +1,114 @@
+import { useContext } from 'react'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import { useState, useEffect } from 'react'
-
+import colors from '../../utils/style/colors'
 import { Loader } from '../../utils/style/Atoms'
+import { SurveyContext } from '../../utils/style/context'
+import { useFetch } from '../../utils/style/hooks'
 
-
-
-
-const StyledLink = styled(Link)`
-padding: 15px;
-color: grey;
-text-decoration: none;
-font-size: 18px;
-    text-decoration: none;
-    margin-top: 10px;
-    
-   
+const SurveyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `
 
-const DivS = styled.div`
-margin-top: 180px;
-display:flex;
-text-align:center;
-align-items:center;
-flex-direction: column;
-
+const QuestionTitle = styled.h2`
+  text-decoration: underline;
+  text-decoration-color: ${colors.primary};
 `
-const H1 = styled.h1` 
-text-decoration:underline #5843e4
 
-
+const QuestionContent = styled.span`
+  margin: 30px;
 `
-const Div1 = styled.div`
-margin-top: 50px;
-font-size:1em;
 
-
-
+const LinkWrapper = styled.div`
+  padding-top: 30px;
+  & a {
+    color: black;
+  }
+  & a:first-of-type {
+    margin-right: 20px;
+  }
 `
-const Div2 = styled.div`
-display:flex;
-text-align:center;
-align-items:center;
-gap: 20px;
 
+const ReplyBox = styled.button`
+  border: none;
+  height: 100px;
+  width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${colors.backgroundLight};
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: ${(props) =>
+    props.isSelected ? `0px 0px 0px 2px ${colors.primary} inset` : 'none'};
+  &:first-child {
+    margin-right: 15px;
+  }
+  &:last-of-type {
+    margin-left: 15px;
+  }
 `
+
+const ReplyWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+`
+
 function Survey() {
   const { questionNumber } = useParams()
-  const [surveyData, setsurveyData] = useState({})
   const questionNumberInt = parseInt(questionNumber)
   const prevQuestionNumber = questionNumberInt === 1 ? 1 : questionNumberInt - 1
   const nextQuestionNumber = questionNumberInt + 1
-  const [isDataLoading, setDataLoading] = useState(false)
 
-  useEffect(() => {
-    setDataLoading(true)
-    fetch(`http://localhost:8000/survey
-    `)
-        .then((response) => response.json()
-        .then(({ surveyData}) => {
-          setsurveyData(surveyData)
-          setDataLoading(false)
-        })
-      )
-    }, [])
-    
+  const { saveAnswers, answers } = useContext(SurveyContext)
+
+  function saveReply(answer) {
+    saveAnswers({ [questionNumber]: answer })
+  }
+
+  const { data, isLoading, error } = useFetch(`http://localhost:8000/survey`)
+  const surveyData = data?.surveyData
+
+  if (error) {
+    return <span>Il y a un problème</span>
+  }
+
   return (
-    <DivS>
-      <H1>Question {questionNumber}</H1>
-      {isDataLoading ? (
+    <SurveyContainer>
+      <QuestionTitle>Question {questionNumber}</QuestionTitle>
+      {isLoading ? (
         <Loader />
       ) : (
-        <Div1>{surveyData[questionNumber]}   </Div1>
+        <QuestionContent>
+          {surveyData && surveyData[questionNumber]}
+        </QuestionContent>
       )}
-      
-      <Div2>
-      <button type="button">OUI</button>
-      <button type="button">NON</button>
-      </Div2>
-      <div className='linkQ'>
-      <StyledLink to={`/survey/${prevQuestionNumber}`}>Précédent</StyledLink>
-      {surveyData[questionNumberInt + 1] ? (
-        <StyledLink to={`/survey/${nextQuestionNumber}`}>Suivant</StyledLink>
-      ) : (
-        <StyledLink to="/results">Résultats</StyledLink>
-      )}
-      </div>
-    </DivS>
+      <ReplyWrapper>
+        <ReplyBox
+          onClick={() => saveReply(true)}
+          isSelected={answers[questionNumber] === true}
+        >
+          Oui
+        </ReplyBox>
+        <ReplyBox
+          onClick={() => saveReply(false)}
+          isSelected={answers[questionNumber] === false}
+        >
+          Non
+        </ReplyBox>
+      </ReplyWrapper>
+      <LinkWrapper>
+        <Link to={`/survey/${prevQuestionNumber}`}>Précédent</Link>
+        {surveyData && surveyData[questionNumberInt + 1] ? (
+          <Link to={`/survey/${nextQuestionNumber}`}>Suivant</Link>
+        ) : (
+          <Link to="/results">Résultats</Link>
+        )}
+      </LinkWrapper>
+    </SurveyContainer>
   )
 }
 

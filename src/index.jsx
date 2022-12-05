@@ -11,6 +11,7 @@ import Freelances from './pages/Freelances'
 import { ThemeProvider } from './utils/style/context';
 import Footer from './components/Footer';
 import GlobalStyle from './utils/style/GlobalStyle';
+import { SurveyProvider } from './utils/style/context';
 
 
 
@@ -21,8 +22,9 @@ root.render(
   
     <React.StrictMode>
         <BrowserRouter>
-        
         <ThemeProvider>
+        <SurveyProvider>
+        
         <GlobalStyle />
         <Header />
         
@@ -40,8 +42,9 @@ root.render(
         
         <Footer />
         
-        </ThemeProvider>
         
+        </SurveyProvider>
+        </ThemeProvider>
         </BrowserRouter>
     </React.StrictMode>
 );

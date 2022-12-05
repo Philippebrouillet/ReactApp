@@ -1,66 +1,72 @@
-import { useEffect, useState } from 'react'
+
 import Card from '../../components/Card'
 import styled from 'styled-components'
+import colors from '../../utils/style/colors'
 import { Loader } from '../../utils/style/Atoms'
-
+import { useFetch, useTheme } from '../../utils/style/hooks'
 
 const CardsContainer = styled.div`
-    display: grid;
-    gap: 24px;
-    grid-template-rows: 310px 310px;
-    grid-template-columns: repeat(2, 1fr);
-    margin-left:330px;
-    margin-right: 250px;
-    align-items: center;
-    justify-content: center;
+  display: grid;
+  gap: 24px;
+  grid-template-rows: 350px 350px;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  justify-items: center;
+`
+
+const PageTitle = styled.h1`
+  font-size: 30px;
+  text-align: center;
+  padding-bottom: 30px;
+  color: ${({ theme }) => (theme === 'light' ? '#000000' : '#ffffff')};
+`
+
+const PageSubtitle = styled.h2`
+  font-size: 20px;
+  color: ${colors.secondary};
+  font-weight: 300;
+  text-align: center;
+  padding-bottom: 30px;
+  color: ${({ theme }) => (theme === 'light' ? '#000000' : '#ffffff')};
 `
 
 const LoaderWrapper = styled.div`
-  margin-top: 200px;
   display: flex;
   justify-content: center;
 `
 
-const H1 = styled.h1`
-text-align:center;
-`
-const P = styled.p`
-text-align:center;
-color:#8186a0;
-`
-
 function Freelances() {
+  const { theme } = useTheme()
+  const { data, isLoading, error } = useFetch(
+    `http://localhost:8000/freelances`
+  )
 
-  const [isDataLoading, setDataLoading] = useState(false)
-  const [freelancersList, setFreelancesList] = useState([])
-    
-  useEffect(() => {
-    setDataLoading(true)
-    fetch(`http://localhost:8000/freelances`)
-        .then((response) => response.json()
-        .then(({ freelancersList}) => {
-          setFreelancesList(freelancersList)
-          setDataLoading(false)
-        })
-      )
-    }, [])
-    
+  // Ici le "?" permet de s'assurer que data existe bien.
+  // Vous pouvez en apprendre davantage sur cette notation ici :
+  // https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Operators/Optional_chaining
+  const freelancersList = data?.freelancersList
+
+  if (error) {
+    return <span>Oups il y a eu un problème</span>
+  }
+
   return (
-      <div>
-          <br/>
-          <H1>Trouvez votre préstataire</H1>
-          <P>Chez Shiny nous réunissons les meilleurs profils pour vous.</P>
-          {isDataLoading ? (
+    <div>
+      <PageTitle theme={theme}>Trouvez votre prestataire</PageTitle>
+      <PageSubtitle theme={theme}>
+        Chez Shiny nous réunissons les meilleurs profils pour vous.
+      </PageSubtitle>
+      {isLoading ? (
         <LoaderWrapper>
-          <Loader />
+          <Loader theme={theme} />
         </LoaderWrapper>
       ) : (
         <CardsContainer>
           {freelancersList.map((profile, index) => (
             <Card
-              key={`${profile.id}-${index}`}
+              key={`${profile.name}-${index}`}
               label={profile.job}
-              name={profile.name}
+              title={profile.name}
               picture={profile.picture}
             />
           ))}
@@ -69,6 +75,5 @@ function Freelances() {
     </div>
   )
 }
-
 
 export default Freelances
